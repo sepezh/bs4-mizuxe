@@ -1,53 +1,42 @@
 const gulp = require("gulp");
-const browserSync = require("browser-sync");
-const sass = require("gulp-sass");
+const browserSync = require("browser-sync").create();
 
-gulp.task("sass", function(done) {
-  return gulp
-    .src(["node_modules/bootstrap/scss/bootstrap.scss", "src/scss/*.scss"])
-    .pipe(sass())
-    .pipe(gulp.dest("src/css"))
-    .pipe(browserSync.stream());
-});
-
-gulp.task("js", function(done) {
+// Copy JS files from node_modules
+gulp.task("js", function () {
   return gulp
     .src([
       "node_modules/bootstrap/dist/js/bootstrap.min.js",
       "node_modules/jquery/dist/jquery.min.js",
-      "node_modules/popper.js/dist/umd/popper.min.js"
+      "node_modules/popper.js/dist/umd/popper.min.js",
     ])
     .pipe(gulp.dest("src/js"))
     .pipe(browserSync.stream());
 });
 
-gulp.task(
-  "serve",
-  gulp.series("sass", done => {
-    browserSync.init({
-      server: "./src"
-    });
-
-    gulp
-      .watch(
-        ["./node_modules/bootstrap/scss/bootstrap.scss", "./src/scss/*.scss"],
-        gulp.series("sass")
-      )
-      .on("change", browserSync.reload);
-    gulp.watch("src/*.html").on("change", browserSync.reload);
-  })
-);
-
-gulp.task("fonts", function(done) {
-  gulp.src("node_modules/font-awesome/fonts/*").pipe(gulp.dest("src/fonts"));
-  done();
+// Copy Font Awesome fonts
+gulp.task("fonts", function () {
+  return gulp
+    .src("node_modules/font-awesome/fonts/*")
+    .pipe(gulp.dest("src/fonts"));
 });
 
-gulp.task("fa", function(done) {
-  gulp
+// Copy Font Awesome CSS
+gulp.task("fa", function () {
+  return gulp
     .src("node_modules/font-awesome/css/font-awesome.min.css")
     .pipe(gulp.dest("src/css"));
-  done();
 });
 
-gulp.task("default", gulp.series("js", "serve", "fonts", "fa"));
+// Serve project with BrowserSync
+gulp.task("serve", function () {
+  browserSync.init({
+    server: "./src",
+  });
+
+  gulp.watch("src/*.html").on("change", browserSync.reload);
+  gulp.watch("src/css/*.css").on("change", browserSync.reload);
+  gulp.watch("src/js/*.js").on("change", browserSync.reload);
+});
+
+// Default task
+gulp.task("default", gulp.series("js", "fonts", "fa", "serve"));
